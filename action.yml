@@ -12,22 +12,28 @@ runs:
         GITHUB_RELEASE_TAG: ${{ github.event.release.tag_name }}
       run: |
         if [ -n "$GITHUB_RELEASE_TAG" ]; then
+          echo "detected RELEASE = $GITHUB_RELEASE_TAG"
+          echo "${{ inputs.name }} = $GITHUB_RELEASE_TAG"
           echo "${{ inputs.name }}=$GITHUB_RELEASE_TAG" >> "${GITHUB_OUTPUT}"
         else
           branch=local
           hash=`date +%Y-%m-%d_%H-%M-%S`
           if [[ "$GITHUB_REF" == "refs/heads/"* ]]; then
             branch="$(echo "$GITHUB_REF" | cut -c 12- | tr '/' '-')"
+            echo "detected branch = $branch"
           else
             echo "don't know how to handle GITHUB_REF=$GITHUB_REF"
           fi
         
           if [ -n "$GITHUB_SHA" ] && [ "${#GITHUB_SHA}" -eq "40" ]; then
             hash="${GITHUB_SHA:0:7}"
+            echo "detected hash = $branch"
+        
+            echo "${{ inputs.name }} = $branch-$hash"
+            echo "${{ inputs.name }}=$branch-$hash" >> "${GITHUB_OUTPUT}"
           else
             echo "GITHUB_SHA is not 40chars long: $GITHUB_SHA"
           fi
         
-          echo "${{ inputs.name }}=$branch-$hash" >> "${GITHUB_OUTPUT}"
         fi
       shell: bash
