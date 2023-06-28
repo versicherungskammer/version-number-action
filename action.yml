@@ -12,7 +12,7 @@ runs:
         GITHUB_RELEASE_TAG: ${{ github.event.release.tag_name }}
       run: |
         if [ -n "$GITHUB_RELEASE_TAG" ]; then
-          echo "::set-env ${{ input.env-var }}=$GITHUB_RELEASE_TAG"
+          echo "::set-env ${{ inputs.env-var }}=$GITHUB_RELEASE_TAG"
         else
           branch=local
           hash=`date +%Y-%m-%d_%H-%M-%S`
@@ -28,6 +28,6 @@ runs:
             echo "GITHUB_SHA is not 40chars long: $GITHUB_SHA"
           fi
         
-          echo "::set-env ${{ input.env-var }}=$branch-$hash"
+          echo "::set-env ${{ inputs.env-var }}=$branch-$hash"
         fi
       shell: bash
