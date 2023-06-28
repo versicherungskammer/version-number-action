@@ -1,0 +1,33 @@
+name: 'Multi-Platform Docker Build'
+description: 'publish multi-platform images to ghcr.io with default labels'
+inputs:
+  env-var:
+    description: 'name of ENV variable to write result into'
+    default: "BUILD_VERSION"
+runs:
+  using: "composite"
+  steps:
+    - name: determine version number
+      env:
+        GITHUB_RELEASE_TAG: ${{ github.event.release.tag_name }}
+      run: |
+        if [ -n "$GITHUB_RELEASE_TAG" ]; then
+          echo "::set-env ${{ input.env-var }}=$GITHUB_RELEASE_TAG"
+        else
+          branch=local
+          hash=`date +%Y-%m-%d_%H-%M-%S`
+          if [[ "$GITHUB_REF" == "refs/heads/"* ]]; then
+            branch="$(echo "$GITHUB_REF" | cut -c 12- | tr '/' '-')"
+          else
+            echo "don't know how to handle GITHUB_REF=$GITHUB_REF"
+          fi
+        
+          if [ -n "$GITHUB_SHA" ] && [ "${#GITHUB_SHA}" -eq "40" ]; then
+            hash="${GITHUB_SHA:0:7}"
+          else
+            echo "GITHUB_SHA is not 40chars long: $GITHUB_SHA"
+          fi
+        
+          echo "::set-env ${{ input.env-var }}=$branch-$hash"
+        fi
+      shell: bash
