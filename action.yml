@@ -1,20 +1,21 @@
-name: 'Multi-Platform Docker Build'
-description: 'publish multi-platform images to ghcr.io with default labels'
-inputs:
-  name:
-    description: 'name of output to write result into'
-    default: "BUILD_VERSION"
+name: 'Version Number Detector'
+description: 'creates a version number that can be used in subsequent steps based on release/tag/branch/commit'
+outputs:
+  version-number:
+    description: 'determined version number'
+    value: ${{steps.logic.outputs.result}}
 runs:
   using: "composite"
   steps:
     - name: determine version number
+      id: logic
       env:
         GITHUB_RELEASE_TAG: ${{ github.event.release.tag_name }}
       run: |
         if [ -n "$GITHUB_RELEASE_TAG" ]; then
           echo "detected RELEASE = $GITHUB_RELEASE_TAG"
-          echo "${{ inputs.name }} = $GITHUB_RELEASE_TAG"
-          echo "${{ inputs.name }}=$GITHUB_RELEASE_TAG" >> "${GITHUB_OUTPUT}"
+          echo "result = $GITHUB_RELEASE_TAG"
+          echo "result=$GITHUB_RELEASE_TAG" >> "${GITHUB_OUTPUT}"
         else
           branch=local
           hash=`date +%Y-%m-%d_%H-%M-%S`
@@ -29,8 +30,8 @@ runs:
             hash="${GITHUB_SHA:0:7}"
             echo "detected hash = $branch"
         
-            echo "${{ inputs.name }} = $branch-$hash"
-            echo "${{ inputs.name }}=$branch-$hash" >> "${GITHUB_OUTPUT}"
+            echo "result = $branch-$hash"
+            echo "result=$branch-$hash" >> "${GITHUB_OUTPUT}"
           else
             echo "GITHUB_SHA is not 40chars long: $GITHUB_SHA"
           fi
